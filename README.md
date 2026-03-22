@@ -1,4 +1,4 @@
-# x402-deploy
+# x402-deploy 
  
 > 1-click deployment for monetized APIs & MCP servers
 
