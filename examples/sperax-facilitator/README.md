@@ -1,6 +1,6 @@
 # Sperax x402 Facilitator
 
-x402 payment facilitator by [SperaxOS](https://sperax.io) — verifies and settles EIP-3009 USDC micropayments.
+x402 payment facilitator by [SperaxOS](https://sperax.io) — verifies and settles gasless micropayments via EIP-3009 and EIP-2612.
 
 ## Facilitator Endpoint
 
@@ -14,10 +14,16 @@ https://x402.sperax.io
 |---------|----------|--------|
 | Base | 8453 | ✅ |
 | Base Sepolia | 84532 | ✅ |
+| Arbitrum One | 42161 | ✅ |
+| Ethereum | 1 | ✅ |
 
 ## Supported Assets
 
-- **USDC** via EIP-3009 `transferWithAuthorization`
+| Token | Chain | Settlement Scheme |
+|-------|-------|-------------------|
+| **USDC** | Base, Base Sepolia, Arbitrum, Ethereum | EIP-3009 `transferWithAuthorization` |
+| **USDs** | Arbitrum | EIP-2612 `permit` + `transferFrom` |
+| **SPA** | Arbitrum, Ethereum | EIP-2612 `permit` + `transferFrom` |
 
 ## Endpoints
 
@@ -28,6 +34,11 @@ https://x402.sperax.io
 | GET | `/supported` | List supported payment kinds |
 | GET | `/health` | Health check |
 | GET | `/info` | Facilitator info |
+| GET | `/balances` | Facilitator wallet ETH + USDC balances |
+| GET | `/metrics` | Verification/settlement counters and latency |
+| GET | `/fees` | Current gas prices and estimated settlement costs |
+| GET | `/status/:txHash` | Look up settlement tx by hash |
+| GET | `/.well-known/x402` | Protocol discovery endpoint |
 
 ## Usage with x402-deploy
 
@@ -41,7 +52,7 @@ When deploying a paid API with `x402-deploy`, point to the Sperax facilitator:
 
 ## Source Code
 
-Full implementation: [github.com/nirholas/x402-facilitator](https://github.com/nirholas/x402-facilitator)
+Full implementation: [github.com/Sperax/x402-facilitator](https://github.com/Sperax/x402-facilitator)
 
 ## About SperaxOS
 
