@@ -6,10 +6,10 @@ Turn any API or MCP server into a paid service in **5 minutes**. No code changes
 
 ---
 ## 🌎 Choose Your Site Template
-- **[x402 Dashboard](https://x402-dashboard.vercel.app/)**
+- **[x402 Dashboard](https://x402s.vercel.app/)**
 - x402 deploy was was originally [nirholas/universal-crypto-mcp](https://github.com/nirholas/universal-crypto-mcp)
 - **[View Universal Crypto MCP 🛠️](https://mcp.giving/)**
-- **[Deploy x402 Site deploy-x402.vercel.app](deploy-x402.vercel.app)**
+- **[Deploy x402 Site deploy-x402.vercel.app]([deploy-x402.vercel.app](https://x402s.vercel.app/))**
 
 ---
 
