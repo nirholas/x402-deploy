@@ -55,8 +55,9 @@ export function priceToX402Format(price: string, decimals: number = 6): Price {
   const amount = Math.floor(value * Math.pow(10, decimals)).toString();
   
   return {
-    asset: currency === "USD" ? "USDC" : currency,
     amount,
+    currency: currency === "USD" ? "USDC" : currency,
+    decimals,
   };
 }
 

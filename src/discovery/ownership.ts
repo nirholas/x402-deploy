@@ -10,6 +10,7 @@ import {
   createPublicClient,
   http,
   type Address,
+  type Chain,
   type Hex,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
@@ -18,7 +19,7 @@ import { arbitrum, base, baseSepolia, mainnet, optimism, polygon } from "viem/ch
 /**
  * Supported networks for ownership proofs
  */
-const SUPPORTED_CHAINS: Record<string, typeof arbitrum> = {
+const SUPPORTED_CHAINS: Record<string, Chain> = {
   "eip155:1": mainnet,
   "eip155:42161": arbitrum,
   "eip155:8453": base,

@@ -6,7 +6,7 @@
 
 import chalk from "chalk";
 import Table from "cli-table3";
-import { prompt } from "enquirer";
+import { prompt } from "../prompt.js";
 import ora from "ora";
 import type { X402Config } from "../../types/config.js";
 

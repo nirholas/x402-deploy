@@ -85,23 +85,26 @@ export function discoveryMiddleware(
       return;
     }
 
-    // Only handle GET requests
-    if (req.method !== "GET") {
-      res.status(405).json({ error: "Method not allowed" });
-      return;
-    }
-
     try {
-      // CORS headers
+      // CORS headers. Set before the method check so preflight and 405
+      // responses carry them too.
       if (enableCors) {
         res.setHeader("Access-Control-Allow-Origin", "*");
         res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
         res.setHeader("Access-Control-Allow-Headers", "Content-Type");
       }
 
-      // Handle preflight
+      // Handle preflight before rejecting non-GET methods. The 405 guard used
+      // to run first, so every cross-origin preflight got a 405 and the real
+      // GET was never sent.
       if (req.method === "OPTIONS") {
         res.status(204).end();
+        return;
+      }
+
+      // Only GET serves the document
+      if (req.method !== "GET") {
+        res.status(405).json({ error: "Method not allowed" });
         return;
       }
 

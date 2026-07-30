@@ -489,3 +489,55 @@ export class RailwayDeployer {
 export function createRailwayDeployer(apiToken?: string): RailwayDeployer {
   return new RailwayDeployer(apiToken);
 }
+
+/**
+ * Options for the module-level `deployToRailway` helper.
+ */
+export interface RailwayDeployOptions {
+  /** Railway API token. Falls back to RAILWAY_TOKEN. */
+  apiToken?: string;
+  /** Report the plan without creating a project or calling the Railway API. */
+  dryRun?: boolean;
+}
+
+/**
+ * Result of `deployToRailway`. In dry-run mode only the planned name, url and
+ * status are filled in, since nothing was created.
+ */
+export interface RailwayDeploySummary extends Partial<RailwayDeployResult> {
+  success: boolean;
+  url: string;
+  status: string;
+  dryRun: boolean;
+}
+
+/**
+ * Deploy a project to Railway.
+ *
+ * With `dryRun: true` no API token is needed and no request is made: the
+ * planned project name and public URL are returned so callers can preview a
+ * deployment (this is what `x402-deploy deploy --dry-run` reports).
+ */
+export async function deployToRailway(
+  config: X402Config,
+  projectDir: string,
+  options: RailwayDeployOptions = {}
+): Promise<RailwayDeploySummary> {
+  const projectName = config.name
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-");
+
+  if (options.dryRun) {
+    return {
+      success: true,
+      dryRun: true,
+      projectName,
+      url: `https://${projectName}.up.railway.app`,
+      status: "dry-run",
+    };
+  }
+
+  const result = await createRailwayDeployer(options.apiToken).deploy(config, projectDir);
+  return { success: true, dryRun: false, ...result };
+}

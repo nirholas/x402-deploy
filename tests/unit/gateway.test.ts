@@ -315,6 +315,14 @@ describe("x402 Gateway Middleware", () => {
 
       (verifyPayment as Mock).mockResolvedValue(verification);
 
+      // vi.clearAllMocks() clears calls but keeps implementations, so the
+      // rate-limit test above would otherwise leave this rejecting.
+      (checkRateLimit as Mock).mockResolvedValue({
+        allowed: true,
+        limit: 100,
+        window: "1 hour",
+      });
+
       await x402Middleware({ config: testConfig, onPaymentVerified })(req, res, mockNext);
 
       expect(onPaymentVerified).toHaveBeenCalledWith(verification);

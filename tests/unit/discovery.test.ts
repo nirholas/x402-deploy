@@ -75,7 +75,8 @@ describe("Discovery Document Generator", () => {
       // Both should produce the same resources (no double slashes)
       expect(doc1.resources).toEqual(doc2.resources);
       doc1.resources.forEach((resource) => {
-        expect(resource).not.toContain("//api");
+        // Check the path, not the whole URL: "https://" legitimately contains "//".
+        expect(resource.replace(/^https?:\/\//, "")).not.toContain("//");
       });
     });
 

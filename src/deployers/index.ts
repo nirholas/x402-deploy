@@ -3,9 +3,9 @@
  */
 
 import { X402Config, DeployProvider } from "../types/config.js";
-import { RailwayDeployer, RailwayDeployResult, createRailwayDeployer } from "./railway.js";
-import { FlyDeployer, FlyDeployResult, createFlyDeployer } from "./fly.js";
-import { VercelDeployer, VercelDeployResult, createVercelDeployer } from "./vercel.js";
+import { RailwayDeployer, RailwayDeployResult, createRailwayDeployer, deployToRailway } from "./railway.js";
+import { FlyDeployer, FlyDeployResult, createFlyDeployer, deployToFly } from "./fly.js";
+import { VercelDeployer, VercelDeployResult, createVercelDeployer, deployToVercel } from "./vercel.js";
 import { DockerDeployer, DockerDeployResult, createDockerDeployer, deployWithDocker } from "./docker.js";
 
 /**
@@ -35,6 +35,8 @@ export interface DeployOptions {
   verbose?: boolean;
   /** Environment (production, preview) */
   environment?: "production" | "preview";
+  /** Report the plan without calling any provider API */
+  dryRun?: boolean;
 }
 
 /**
@@ -53,13 +55,13 @@ export async function deployToProvider(
 
   switch (provider) {
     case "railway":
-      return deployToRailway(config, projectDir, options);
+      return toDeployResult("railway", await deployToRailway(config, projectDir, options));
 
     case "fly":
-      return deployToFly(config, projectDir, options);
+      return toDeployResult("fly", await deployToFly(config, projectDir, options));
 
     case "vercel":
-      return deployToVercel(config, projectDir, options);
+      return toDeployResult("vercel", await deployToVercel(config, projectDir, options));
 
     case "docker":
     case "self-hosted":
@@ -71,74 +73,41 @@ export async function deployToProvider(
 }
 
 /**
- * Deploy to Railway
+ * Normalize a provider-specific deploy summary into the generic DeployResult.
  */
-async function deployToRailway(
-  config: X402Config,
-  projectDir: string,
-  options: DeployOptions
-): Promise<DeployResult> {
-  const deployer = createRailwayDeployer(options.apiToken);
-  const result = await deployer.deploy(config, projectDir);
-
+function toDeployResult(
+  provider: DeployProvider,
+  result: {
+    success: boolean;
+    url: string;
+    status: string;
+    dryRun: boolean;
+    deploymentId?: string;
+    projectId?: string;
+    projectName?: string;
+    appName?: string;
+    appUrl?: string;
+    productionUrl?: string;
+    aliases?: string[];
+    machines?: unknown;
+    regions?: string[];
+    serviceId?: string;
+  }
+): DeployResult {
   return {
-    url: result.url,
-    provider: "railway",
-    deploymentId: result.deploymentId,
+    url: result.productionUrl || result.appUrl || result.url,
+    provider,
+    deploymentId: result.deploymentId || result.appName || "dry-run",
     projectId: result.projectId,
-    projectName: result.projectName,
+    projectName: result.projectName || result.appName,
     status: result.status,
     metadata: {
-      serviceId: result.serviceId,
-    },
-  };
-}
-
-/**
- * Deploy to Fly.io
- */
-async function deployToFly(
-  config: X402Config,
-  projectDir: string,
-  options: DeployOptions
-): Promise<DeployResult> {
-  const deployer = createFlyDeployer(options.apiToken);
-  const result = await deployer.deploy(config, projectDir);
-
-  return {
-    url: result.appUrl,
-    provider: "fly",
-    deploymentId: result.appName,
-    projectName: result.appName,
-    status: result.status,
-    metadata: {
-      machines: result.machines,
-      regions: result.regions,
-    },
-  };
-}
-
-/**
- * Deploy to Vercel
- */
-async function deployToVercel(
-  config: X402Config,
-  projectDir: string,
-  options: DeployOptions
-): Promise<DeployResult> {
-  const deployer = createVercelDeployer(options.apiToken);
-  const result = await deployer.deploy(config, projectDir);
-
-  return {
-    url: result.productionUrl,
-    provider: "vercel",
-    deploymentId: result.deploymentId,
-    projectId: result.projectId,
-    projectName: result.projectName,
-    status: result.status,
-    metadata: {
-      aliases: result.aliases,
-      deploymentUrl: result.url,
+      dryRun: result.dryRun,
+      ...(result.serviceId ? { serviceId: result.serviceId } : {}),
+      ...(result.machines ? { machines: result.machines } : {}),
+      ...(result.regions ? { regions: result.regions } : {}),
+      ...(result.aliases ? { aliases: result.aliases } : {}),
+      ...(result.productionUrl ? { deploymentUrl: result.url } : {}),
     },
   };
 }
@@ -313,7 +282,7 @@ export async function deleteDeployment(
 }
 
 // Re-export deployers
-export { RailwayDeployer, RailwayDeployResult, createRailwayDeployer } from "./railway.js";
-export { FlyDeployer, FlyDeployResult, createFlyDeployer } from "./fly.js";
-export { VercelDeployer, VercelDeployResult, createVercelDeployer } from "./vercel.js";
+export { RailwayDeployer, RailwayDeployResult, createRailwayDeployer, deployToRailway } from "./railway.js";
+export { FlyDeployer, FlyDeployResult, createFlyDeployer, deployToFly } from "./fly.js";
+export { VercelDeployer, VercelDeployResult, createVercelDeployer, deployToVercel } from "./vercel.js";
 export { DockerDeployer, DockerDeployResult, createDockerDeployer, deployWithDocker } from "./docker.js";

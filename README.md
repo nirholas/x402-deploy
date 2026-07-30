@@ -5,11 +5,10 @@
 Turn any API or MCP server into a paid service in **5 minutes**. No code changes required.
 
 ---
-## 🌎 Choose Your Site Template
-- **[x402 Dashboard](https://x402s.vercel.app/)**
-- x402 deploy was was originally [nirholas/universal-crypto-mcp](https://github.com/nirholas/universal-crypto-mcp)
-- **[View Universal Crypto MCP 🛠️](https://mcp.giving/)**
-- **[Deploy x402 Site deploy-x402.vercel.app]([deploy-x402.vercel.app](https://x402s.vercel.app/))**
+## 🌎 Related Projects
+
+- **[x402-deploy](https://github.com/nirholas/x402-deploy)**: this repository. The hosted dashboard and site demos are offline while hosting is being migrated, so no live URL is published here yet.
+- **[Universal Crypto MCP](https://github.com/nirholas/universal-crypto-mcp)**: the project x402-deploy originally grew out of.
 
 ---
 
@@ -174,7 +173,7 @@ We love contributions! See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## 📄 License
 
-MIT © [nirholas](https://github.com/nirholas)
+All rights reserved. See [LICENSE](LICENSE).
 
 ---
 

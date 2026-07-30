@@ -155,18 +155,25 @@ function x402Middleware(req, res, next) {
   const paymentHeader = req.headers['x-payment'];
   
   if (!paymentHeader) {
+    const accepts = {
+      version: '1.0',
+      price: price,
+      network: config.payment.network,
+      token: config.payment.token || 'USDC',
+      wallet: config.payment.wallet,
+      facilitator: FACILITATOR_URL,
+    };
+
+    // Advertise the terms in headers as well as the body, so clients that only
+    // read headers (and the CORS expose-headers list) can discover them.
+    res.set('X-Payment-Required', price);
+    res.set('X-Payment-Accepts', JSON.stringify(accepts));
+
     // Return 402 Payment Required
     return res.status(402).json({
       error: 'Payment Required',
       message: 'This endpoint requires payment via x402 protocol',
-      x402: {
-        version: '1.0',
-        price: price,
-        network: config.payment.network,
-        token: config.payment.token || 'USDC',
-        wallet: config.payment.wallet,
-        facilitator: FACILITATOR_URL,
-      },
+      x402: accepts,
     });
   }
   
@@ -388,11 +395,11 @@ class Metrics:
         return {
             "requests": self.requests,
             "payments": self.payments,
-            "revenue": f"${self.revenue_cents / 100:.2f}",
+            "revenue": f"\${self.revenue_cents / 100:.2f}",
             "uniquePayers": len(self.payer_addresses),
             "uptime": int(uptime),
             "routeStats": {
-                route: {"requests": stats["requests"], "revenue": f"${stats['revenue'] / 100:.2f}"}
+                route: {"requests": stats["requests"], "revenue": f"\${stats['revenue'] / 100:.2f}"}
                 for route, stats in self.route_stats.items()
             },
         }

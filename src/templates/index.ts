@@ -5,6 +5,9 @@
 // Dockerfile templates
 export {
   generateDockerfile,
+  generateNodeDockerfile,
+  generatePythonDockerfile,
+  generateNextjsDockerfile,
   generateDockerignore,
 } from "./dockerfile.js";
 
@@ -23,6 +26,7 @@ export {
 export {
   generateFlyToml,
   generateFlySecrets,
+  generateFlySecretCommands,
   generateFlyMachinesConfig,
   generateFlyMultiRegion,
   FLY_REGIONS,
@@ -36,6 +40,7 @@ export {
   generateNextMiddleware,
   generateNextApiWrapper,
   generateVercelEnvs,
+  toVercelApiEnvs,
   VERCEL_REGIONS,
   type VercelConfig,
   type VercelRegion,

@@ -62,20 +62,30 @@ export function wrapMcpServer(options: WrapMcpOptions): express.Application {
 
   app.all("/mcp", async (req, res) => {
     try {
-      const sessionId = req.headers["mcp-session-id"] as string;
-      let sessionInfo = sessions.get(sessionId);
+      const sessionId = req.headers["mcp-session-id"] as string | undefined;
+      let sessionInfo = sessionId ? sessions.get(sessionId) : undefined;
 
       if (!sessionInfo) {
+        // The transport only has a sessionId once it has handled the initialize
+        // request, so register the session from onsessioninitialized rather than
+        // reading transport.sessionId here (it is still undefined at this point).
+        let newSession: SessionInfo;
         const transport = new StreamableHTTPServerTransport({
           sessionIdGenerator: () => crypto.randomUUID(),
+          onsessioninitialized: (id: string) => {
+            sessions.set(id, newSession);
+          },
+          onsessionclosed: (id: string) => {
+            sessions.delete(id);
+          },
         });
-        await server.connect(transport);
-        sessionInfo = {
+        newSession = {
           transport,
           lastActivity: Date.now(),
           createdAt: Date.now(),
         };
-        sessions.set(transport.sessionId, sessionInfo);
+        await server.connect(transport);
+        sessionInfo = newSession;
       } else {
         // Update last activity timestamp
         sessionInfo.lastActivity = Date.now();

@@ -103,7 +103,15 @@ export interface RateLimitOptions {
   config: X402Config;
 }
 
-export interface RateLimitResult {
+/**
+ * Result of the `checkRateLimit` helper.
+ *
+ * Distinct from `RateLimitResult` in `rate-limiter.ts`: that one is the
+ * limiter's own return shape (with `resetAt`), while this one is the
+ * config-aware summary the helper builds on top of it (with the configured
+ * `limit` and a human-readable `window`).
+ */
+export interface RateLimitCheck {
   allowed: boolean;
   remaining: number;
   limit: number;
@@ -116,7 +124,7 @@ export interface RateLimitResult {
  */
 export async function checkRateLimit(
   options: RateLimitOptions
-): Promise<RateLimitResult> {
+): Promise<RateLimitCheck> {
   const { payerAddress, route, config } = options;
   
   if (!globalRateLimiter) {

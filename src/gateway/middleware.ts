@@ -1,7 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import { verifyPayment, PaymentVerification } from "./payment-verifier.js";
 import { getPriceForRoute, checkRateLimit, trackRequest } from "./helpers.js";
-import type { X402Config, RoutePricing } from "../types/config.js";
+import type { PricingMatch } from "./helpers.js";
+import type { X402Config } from "../types/config.js";
 
 export interface X402MiddlewareOptions {
   config: X402Config;
@@ -125,7 +126,7 @@ export function x402Middleware(options: X402MiddlewareOptions) {
  */
 function send402Response(
   res: Response,
-  pricing: RoutePricing,
+  pricing: PricingMatch,
   config: X402Config
 ) {
   const requirements = buildPaymentRequirements(pricing, config);
@@ -140,7 +141,7 @@ function send402Response(
 /**
  * Build payment requirements object for 402 response
  */
-function buildPaymentRequirements(pricing: RoutePricing, config: X402Config) {
+function buildPaymentRequirements(pricing: PricingMatch, config: X402Config) {
   return {
     accepts: {
       scheme: "exact",

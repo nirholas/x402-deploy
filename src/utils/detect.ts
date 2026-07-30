@@ -101,7 +101,8 @@ export async function detectProject(dir: string): Promise<ProjectDetection> {
   }
 
   // Find entry point
-  entryPoint = await findEntrypoint(dir, type);
+  // findEntrypoint returns null when nothing matches; ProjectDetection.entryPoint is optional.
+  entryPoint = (await findEntrypoint(dir, type)) ?? undefined;
 
   // Detect routes if possible
   if (entryPoint) {

@@ -7,7 +7,7 @@ import chalk from "chalk";
 import ora from "ora";
 import fs from "fs-extra";
 import path from "path";
-import { prompt } from "enquirer";
+import { prompt } from "../prompt.js";
 import { X402ConfigSchema } from "../../types/config.js";
 
 interface ExportOptions {

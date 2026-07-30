@@ -416,7 +416,7 @@ describe("Deployment Integration", () => {
 
       expect(envVars.X402_WALLET).toBe("0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb");
       expect(envVars.X402_NETWORK).toBe("eip155:8453");
-      expect(envVars.X402_FACILITATOR).toBe("https://facilitator.x402.dev");
+      expect(envVars.X402_FACILITATOR_URL).toBe("https://facilitator.x402.dev");
     });
   });
 });

@@ -6,7 +6,7 @@
 import fs from "fs-extra";
 import path from "path";
 import { X402Config } from "../types/config.js";
-import { generateVercelJson, generateVercelEnvs } from "../templates/vercel.js";
+import { generateVercelJson, generateVercelEnvs, toVercelApiEnvs } from "../templates/vercel.js";
 
 /**
  * Vercel project interface
@@ -297,7 +297,7 @@ export class VercelDeployer {
     }
 
     // 3. Set environment variables
-    const envVars = generateVercelEnvs(config);
+    const envVars = toVercelApiEnvs(generateVercelEnvs(config));
     console.log(`[vercel] Setting ${envVars.length} environment variables`);
     await this.setEnvVars(project.id, envVars);
 
@@ -392,7 +392,7 @@ export class VercelDeployer {
     }
 
     // 2. Set environment variables
-    const envVars = generateVercelEnvs(config);
+    const envVars = toVercelApiEnvs(generateVercelEnvs(config));
     await this.setEnvVars(project.id, envVars);
 
     // 3. Link to GitHub repository
@@ -501,4 +501,62 @@ export function createVercelDeployer(
   options?: VercelDeployerOptions
 ): VercelDeployer {
   return new VercelDeployer(apiToken, options);
+}
+
+/**
+ * Options for the module-level `deployToVercel` helper.
+ */
+export interface VercelDeployHelperOptions {
+  /** Vercel API token. Falls back to VERCEL_TOKEN. */
+  apiToken?: string;
+  /** Vercel team id. */
+  teamId?: string;
+  /** Report the plan without creating a project or calling the Vercel API. */
+  dryRun?: boolean;
+}
+
+/**
+ * Result of `deployToVercel`. In dry-run mode only the planned name, url and
+ * status are filled in, since nothing was created.
+ */
+export interface VercelDeploySummary extends Partial<VercelDeployResult> {
+  success: boolean;
+  url: string;
+  status: string;
+  dryRun: boolean;
+}
+
+/**
+ * Deploy a project to Vercel.
+ *
+ * With `dryRun: true` no API token is needed and no request is made: the
+ * planned project name and production URL are returned so callers can preview
+ * a deployment.
+ */
+export async function deployToVercel(
+  config: X402Config,
+  projectDir: string,
+  options: VercelDeployHelperOptions = {}
+): Promise<VercelDeploySummary> {
+  const projectName = config.name
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-");
+
+  if (options.dryRun) {
+    return {
+      success: true,
+      dryRun: true,
+      projectName,
+      url: `https://${projectName}.vercel.app`,
+      productionUrl: `https://${projectName}.vercel.app`,
+      status: "dry-run",
+    };
+  }
+
+  const result = await createVercelDeployer(
+    options.apiToken,
+    options.teamId ? { teamId: options.teamId } : undefined
+  ).deploy(config, projectDir);
+  return { success: true, dryRun: false, ...result };
 }

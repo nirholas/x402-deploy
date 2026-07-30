@@ -316,16 +316,10 @@ export class FlyDeployer {
     }
 
     // 3. Set secrets
-    const secretCommands = generateFlySecrets(config);
-    if (secretCommands.length > 0) {
+    const secrets = generateFlySecrets(config);
+    if (Object.keys(secrets).length > 0) {
       console.log(`[fly] Setting secrets...`);
-      for (const cmd of secretCommands) {
-        // Extract key=value from command
-        const match = cmd.match(/fly secrets set (\S+)="([^"]+)"/);
-        if (match) {
-          await this.setSecrets(appName, { [match[1]]: match[2] });
-        }
-      }
+      await this.setSecrets(appName, secrets);
     }
 
     // 4. Deploy using flyctl
@@ -374,4 +368,63 @@ export class FlyDeployer {
  */
 export function createFlyDeployer(apiToken?: string, organization?: string): FlyDeployer {
   return new FlyDeployer(apiToken, organization);
+}
+
+/**
+ * Options for the module-level `deployToFly` helper.
+ */
+export interface FlyDeployOptions {
+  /** Fly.io API token. Falls back to FLY_API_TOKEN. */
+  apiToken?: string;
+  /** Fly organization slug. */
+  organization?: string;
+  /** Report the plan without creating an app or calling the Fly API. */
+  dryRun?: boolean;
+}
+
+/**
+ * Result of `deployToFly`. In dry-run mode only the planned name, url and
+ * status are filled in, since nothing was created.
+ */
+export interface FlyDeploySummary extends Partial<FlyDeployResult> {
+  success: boolean;
+  url: string;
+  status: string;
+  dryRun: boolean;
+}
+
+/**
+ * Deploy a project to Fly.io.
+ *
+ * With `dryRun: true` no API token is needed and no request is made: the
+ * planned app name and public URL are returned so callers can preview a
+ * deployment.
+ */
+export async function deployToFly(
+  config: X402Config,
+  projectDir: string,
+  options: FlyDeployOptions = {}
+): Promise<FlyDeploySummary> {
+  const appName = config.name
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-")
+    .substring(0, 63);
+
+  if (options.dryRun) {
+    return {
+      success: true,
+      dryRun: true,
+      appName,
+      appUrl: `https://${appName}.fly.dev`,
+      url: `https://${appName}.fly.dev`,
+      status: "dry-run",
+    };
+  }
+
+  const result = await createFlyDeployer(options.apiToken, options.organization).deploy(
+    config,
+    projectDir
+  );
+  return { success: true, dryRun: false, ...result, url: result.appUrl };
 }

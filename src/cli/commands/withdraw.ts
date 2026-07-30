@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { prompt } from "enquirer";
+import { prompt } from "../prompt.js";
 import ora from "ora";
 import fs from "fs-extra";
 import path from "path";

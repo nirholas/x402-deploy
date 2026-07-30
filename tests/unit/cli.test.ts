@@ -49,8 +49,8 @@ describe("CLI Commands", () => {
       await fs.writeJSON(path.join(testDir, "package.json"), packageJson);
 
       // Import and test project detection
-      const { detectProjectType } = await import("../../src/utils/detect-project.js");
-      const result = await detectProjectType(testDir);
+      const { detectProject } = await import("../../src/utils/detect.js");
+      const result = await detectProject(testDir);
 
       expect(result.type).toBe("express-api");
       expect(result.language).toBe("javascript");
@@ -65,8 +65,8 @@ describe("CLI Commands", () => {
       };
       await fs.writeJSON(path.join(testDir, "package.json"), packageJson);
 
-      const { detectProjectType } = await import("../../src/utils/detect-project.js");
-      const result = await detectProjectType(testDir);
+      const { detectProject } = await import("../../src/utils/detect.js");
+      const result = await detectProject(testDir);
 
       expect(result.type).toBe("mcp-server");
     });
@@ -83,8 +83,8 @@ describe("CLI Commands", () => {
       await fs.writeJSON(path.join(testDir, "package.json"), packageJson);
       await fs.writeJSON(path.join(testDir, "tsconfig.json"), tsconfig);
 
-      const { detectProjectType } = await import("../../src/utils/detect-project.js");
-      const result = await detectProjectType(testDir);
+      const { detectProject } = await import("../../src/utils/detect.js");
+      const result = await detectProject(testDir);
 
       expect(result.language).toBe("typescript");
     });
@@ -93,8 +93,8 @@ describe("CLI Commands", () => {
       const requirementsTxt = "fastapi==0.100.0\nuvicorn==0.22.0\n";
       await fs.writeFile(path.join(testDir, "requirements.txt"), requirementsTxt);
 
-      const { detectProjectType } = await import("../../src/utils/detect-project.js");
-      const result = await detectProjectType(testDir);
+      const { detectProject } = await import("../../src/utils/detect.js");
+      const result = await detectProject(testDir);
 
       expect(result.type).toBe("fastapi");
       expect(result.language).toBe("python");
@@ -110,8 +110,8 @@ describe("CLI Commands", () => {
       };
       await fs.writeJSON(path.join(testDir, "package.json"), packageJson);
 
-      const { detectProjectType } = await import("../../src/utils/detect-project.js");
-      const result = await detectProjectType(testDir);
+      const { detectProject } = await import("../../src/utils/detect.js");
+      const result = await detectProject(testDir);
 
       expect(result.type).toBe("nextjs");
     });

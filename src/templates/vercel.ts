@@ -130,6 +130,19 @@ export function generateVercelJson(config: X402Config): string {
         maxDuration: 30,
       },
     };
+  } else {
+    // Non-Next projects are served by the generated x402 wrapper. Without a
+    // function entry and a catch-all rewrite, Vercel has nothing to route to
+    // and every request 404s.
+    vercelConfig.functions = {
+      ".x402/wrapper.js": {
+        memory: 1024,
+        maxDuration: 30,
+      },
+    };
+    vercelConfig.rewrites = [
+      { source: "/(.*)", destination: "/.x402/wrapper.js" },
+    ];
   }
 
   // Add regions if specified
@@ -390,27 +403,38 @@ export function withX402<T>(
 /**
  * Generate environment variable configuration for Vercel
  */
-export function generateVercelEnvs(config: X402Config): Array<{
+export function generateVercelEnvs(config: X402Config): Record<string, string> {
+  const envs: Record<string, string> = {
+    X402_ENABLED: "true",
+    X402_WALLET: config.payment.wallet,
+    X402_NETWORK: config.payment.network,
+    X402_TOKEN: config.payment.token || "USDC",
+    X402_PRICING_MODEL: config.pricing.model,
+    X402_DEFAULT_PRICE: config.pricing.default || "$0.001",
+  };
+
+  if (config.payment.facilitator) {
+    envs.X402_FACILITATOR_URL = config.payment.facilitator;
+  }
+
+  return envs;
+}
+
+/**
+ * Vercel's env API takes one record per variable with an explicit target list,
+ * so convert the plain env map into that wire shape.
+ */
+export function toVercelApiEnvs(
+  envs: Record<string, string>,
+  target: ("production" | "preview" | "development")[] = ["production", "preview"]
+): Array<{
   key: string;
   value: string;
   target: ("production" | "preview" | "development")[];
 }> {
-  const envs = [
-    { key: "X402_ENABLED", value: "true", target: ["production", "preview"] as const },
-    { key: "X402_WALLET", value: config.payment.wallet, target: ["production", "preview"] as const },
-    { key: "X402_NETWORK", value: config.payment.network, target: ["production", "preview"] as const },
-    { key: "X402_TOKEN", value: config.payment.token || "USDC", target: ["production", "preview"] as const },
-    { key: "X402_PRICING_MODEL", value: config.pricing.model, target: ["production", "preview"] as const },
-    { key: "X402_DEFAULT_PRICE", value: config.pricing.default || "$0.001", target: ["production", "preview"] as const },
-  ];
-
-  if (config.payment.facilitator) {
-    envs.push({
-      key: "X402_FACILITATOR_URL",
-      value: config.payment.facilitator,
-      target: ["production", "preview"] as const,
-    });
-  }
-
-  return envs.map(e => ({ ...e, target: [...e.target] }));
+  return Object.entries(envs).map(([key, value]) => ({
+    key,
+    value,
+    target: [...target],
+  }));
 }

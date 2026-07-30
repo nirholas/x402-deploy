@@ -218,7 +218,9 @@ class Histogram {
         }
       }
 
-      const buckets = this.buckets.map((le) => ({
+      // Typed as HistogramValue["buckets"] because the "+Inf" bucket pushed
+      // below uses the string form of `le`.
+      const buckets: HistogramValue["buckets"] = this.buckets.map((le) => ({
         le,
         count: data.bucketCounts.get(le) || 0,
       }));
