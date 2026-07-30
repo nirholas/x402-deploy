@@ -43,6 +43,9 @@ export {
   createRailwayDeployer,
   createFlyDeployer,
   createVercelDeployer,
+  deployToRailway,
+  deployToFly,
+  deployToVercel,
   type DeployResult,
   type DeployOptions,
 } from "./deployers/index.js";
@@ -51,6 +54,9 @@ export {
 export {
   // Dockerfile
   generateDockerfile,
+  generateNodeDockerfile,
+  generatePythonDockerfile,
+  generateNextjsDockerfile,
   generateDockerignore,
   // Railway
   generateRailwayJson,
@@ -65,6 +71,8 @@ export {
   FLY_REGIONS,
   // Vercel
   generateVercelJson,
+  generateVercelEnvs,
+  toVercelApiEnvs,
   generateNextMiddleware,
   generateNextApiWrapper,
   VERCEL_REGIONS,
