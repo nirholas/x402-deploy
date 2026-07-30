@@ -184,3 +184,10 @@ All rights reserved. See [LICENSE](LICENSE).
 ---
 
 As with most of my repos, I spend a lot of time building then find something interesting or have a need for something and i start on the next. I hope this at the very least is a good resource you can use to monetize your APIs and MCP Servers. What I truly hope to build is a community of developers, I love shipping alone but i wouldn't mind collaborating here and there. Please, always feel free to PR and throw an issue down. I am waiting. 
+
+## Documentation
+
+Full documentation site: **https://nirholas.github.io/x402-deploy/**
+
+- [Getting started](docs/getting-started.md) covers install and first run.
+- [Examples](docs/examples.md) has copy-paste snippets.
