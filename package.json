@@ -1,6 +1,6 @@
 {
   "name": "@nirholas/x402-deploy",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "1-click deployment and monetization for MCP servers and APIs with x402 payments",
   "type": "module",
   "main": "./dist/index.js",
@@ -99,13 +99,16 @@
     "@types/express": "^4.17.21",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.10.0",
-    "@vitest/coverage-v8": "^1.0.0",
+    "@vitest/coverage-v8": "^3.2.7",
     "execa": "^8.0.0",
     "tsup": "^8.0.0",
     "typescript": "^5.3.0",
-    "vitest": "^1.0.0"
+    "vitest": "^3.2.7"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "overrides": {
+    "esbuild": "^0.28.1"
   }
 }
