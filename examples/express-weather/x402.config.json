@@ -10,11 +10,11 @@
   "pricing": {
     "default": "$0.001",
     "routes": {
-      "/api/weather/current": "$0.001",
-      "/api/weather/forecast": "$0.01",
-      "/api/weather/historical": "$0.01",
-      "/api/weather/premium": "$0.05",
-      "/api/weather/alerts": "$0.05"
+      "GET /api/weather/current": "$0.001",
+      "GET /api/weather/forecast": "$0.01",
+      "GET /api/weather/historical": "$0.01",
+      "GET /api/weather/premium": "$0.05",
+      "GET /api/weather/alerts": "$0.05"
     },
     "tiers": {
       "basic": {
