@@ -9,7 +9,13 @@
 
 import express from "express";
 import cors from "cors";
-import { x402Gateway, x402Discovery } from "@nirholas/x402-deploy";
+import { readFileSync } from "node:fs";
+import { x402WithFreeRoutes, discoveryMiddleware } from "@nirholas/x402-deploy";
+
+// Route prices, wallet and discovery text live in x402.config.json.
+// X402_WALLET overrides the wallet without editing the file.
+const config = JSON.parse(readFileSync(new URL("../x402.config.json", import.meta.url), "utf8"));
+if (process.env.X402_WALLET) config.payment.wallet = process.env.X402_WALLET;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,27 +24,11 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Apply x402 payment gateway
-app.use(x402Gateway({
-  wallet: process.env.X402_WALLET || "0x40252CFDF8B20Ed757D61ff157719F33Ec332402",
-  network: "eip155:8453", // Base
-  token: "USDC",
-  routes: {
-    "/api/weather/current": "$0.001",
-    "/api/weather/forecast": "$0.01",
-    "/api/weather/historical": "$0.01",
-    "/api/weather/premium": "$0.05",
-    "/api/weather/alerts": "$0.05",
-  },
-  freeRoutes: ["/health", "/docs", "/.well-known/x402"],
-}));
+// Add discovery endpoint (/.well-known/x402)
+app.use(discoveryMiddleware({ config }));
 
-// Add discovery endpoint
-app.use(x402Discovery({
-  name: "Weather API",
-  description: "Real-time weather data with tiered pricing",
-  category: ["weather", "data"],
-}));
+// Apply x402 payment gateway
+app.use(x402WithFreeRoutes({ config }, ["/health", "/docs", "/.well-known/x402"]));
 
 /**
  * Mock weather data generator
