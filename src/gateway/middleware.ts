@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { verifyPayment, PaymentVerification } from "./payment-verifier.js";
+import { settlePayment, paymentKey, ReplayGuard } from "./settlement.js";
 import { getPriceForRoute, checkRateLimit, trackRequest } from "./helpers.js";
 import type { PricingMatch } from "./helpers.js";
 import type { X402Config } from "../types/config.js";
@@ -23,6 +24,8 @@ export interface X402Headers {
  */
 export function x402Middleware(options: X402MiddlewareOptions) {
   const { config, facilitatorUrl, testMode, onPaymentVerified, onPaymentFailed } = options;
+  const replayGuard = new ReplayGuard();
+  const resolvedFacilitator = facilitatorUrl || config.payment.facilitator || "https://facilitator.x402.dev";
   
   return async (req: Request, res: Response, next: NextFunction) => {
     const startTime = Date.now();
@@ -51,7 +54,7 @@ export function x402Middleware(options: X402MiddlewareOptions) {
         expectedPrice: pricing.price,
         expectedPayTo: config.payment.wallet,
         network: config.payment.network,
-        facilitatorUrl: facilitatorUrl || config.payment.facilitator || "https://facilitator.x402.dev",
+        facilitatorUrl: resolvedFacilitator,
         testMode,
       });
 
@@ -79,14 +82,48 @@ export function x402Middleware(options: X402MiddlewareOptions) {
         });
       }
 
-      // Step 5: Payment verified - track and continue
-      onPaymentVerified?.(verification);
+      // Step 5: Claim the authorization so it cannot buy a second request,
+      // then settle it on-chain. The resource is only released after the
+      // facilitator confirms settlement.
+      let txHash = verification.txHash;
+      const claimKey = paymentKey(paymentHeader);
+      if (!testMode) {
+        if (!replayGuard.claim(claimKey)) {
+          return res.status(402).json({
+            error: "payment_already_used",
+            message: "This payment authorization has already been used. Sign a new payment.",
+            required: buildPaymentRequirements(pricing, config),
+          });
+        }
+
+        const settlement = await settlePayment({
+          paymentHeader,
+          expectedPrice: pricing.price,
+          expectedPayTo: config.payment.wallet,
+          network: config.payment.network,
+          facilitatorUrl: resolvedFacilitator,
+        });
+
+        if (!settlement.success) {
+          replayGuard.release(claimKey);
+          onPaymentFailed?.(new Error(settlement.error || "Settlement failed"), req);
+          return res.status(402).json({
+            error: "payment_settlement_failed",
+            message: settlement.error,
+            required: buildPaymentRequirements(pricing, config),
+          });
+        }
+        txHash = settlement.txHash ?? txHash;
+      }
+
+      // Step 6: Payment settled - track and continue
+      onPaymentVerified?.({ ...verification, txHash });
       
       // Add payment info to request for downstream use
       (req as any).x402 = {
         payer: verification.payer,
         amount: verification.amount,
-        txHash: verification.txHash,
+        txHash,
         timestamp: Date.now(),
       };
 
@@ -97,14 +134,14 @@ export function x402Middleware(options: X402MiddlewareOptions) {
         amount: pricing.price,
         config,
         duration: Date.now() - startTime,
-        txHash: verification.txHash,
+        txHash,
         network: config.payment.network,
       });
 
       // Add response header with payment confirmation
       res.setHeader("x-payment-response", JSON.stringify({
         status: "accepted",
-        txHash: verification.txHash,
+        txHash,
         balance: verification.remainingBalance,
       }));
 

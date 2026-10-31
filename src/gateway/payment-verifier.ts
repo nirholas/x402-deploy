@@ -34,6 +34,29 @@ export interface PaymentVerification {
 }
 
 /**
+ * Build the standard x402 facilitator request body shared by /verify and
+ * /settle: the client's payment payload plus the requirements this resource
+ * server demands (chain, asset, recipient, minimum amount in base units), so
+ * the facilitator can bind the payment to this exact charge.
+ */
+export function buildFacilitatorRequest(
+  payment: Record<string, any>,
+  terms: { expectedPrice: string; expectedPayTo: string; network: string },
+) {
+  const chainId = Number(terms.network.split(":")[1]);
+  const asset = USDC_ADDRESSES[terms.network];
+  return {
+    paymentPayload: payment,
+    paymentRequirements: {
+      chainId,
+      asset,
+      payTo: terms.expectedPayTo,
+      maxAmountRequired: parsePrice(terms.expectedPrice).toString(),
+    },
+  };
+}
+
+/**
  * Verify an x402 payment header
  */
 export async function verifyPayment(
@@ -59,32 +82,32 @@ export async function verifyPayment(
     const response = await fetch(`${facilitatorUrl}/verify`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        payment,
-        expectedPrice: parsePrice(expectedPrice),
-        expectedPayTo,
-        network,
-      }),
+      body: JSON.stringify(
+        buildFacilitatorRequest(payment, { expectedPrice, expectedPayTo, network }),
+      ),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
+    const result = await response.json().catch(() => ({} as Record<string, any>));
+
+    if (!response.ok && result.isValid !== true && result.valid !== true) {
       return {
         valid: false,
-        payer: payment.payer || "unknown",
+        payer: payment.payer || result.payer || "unknown",
         amount: "0",
-        error: error.message || "Facilitator verification failed",
+        error:
+          result.invalidReason || result.error || result.message || "Facilitator verification failed",
       };
     }
 
-    const result = await response.json();
+    const valid = (result.isValid ?? result.valid) === true;
 
     return {
-      valid: result.valid,
-      payer: result.payer,
-      amount: result.amount,
+      valid,
+      payer: result.payer || payment.authorization?.from || payment.payer || "unknown",
+      amount: result.amount ?? expectedPrice,
       txHash: result.txHash,
       remainingBalance: result.remainingBalance,
+      error: valid ? undefined : result.invalidReason || result.error || "Payment invalid",
     };
   } catch (error) {
     return {

@@ -23,7 +23,7 @@ Turn any API or MCP server into a paid service in **5 minutes**. No code changes
 - **🥳 1-Click Deploy** - Railway, Fly.io, Vercel, or Docker
 - **📊 Live Dashboard** - Real-time earnings and analytics
 - **🔍 Auto-Discovery** - Automatic listing on x402scan.com
-- **🛡️ Zero Trust** - Payment verification before API access
+- **🛡️ Zero Trust** - Payment verified and settled through the facilitator before the resource is released, with replay protection per payment authorization
 - **🎨 Beautiful CLI** - Stunning terminal UI with live updates
 
 ---

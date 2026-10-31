@@ -12,6 +12,16 @@ vi.mock("../../src/gateway/payment-verifier.js", () => ({
   verifyPayment: vi.fn(),
 }));
 
+vi.mock("../../src/gateway/settlement.js", async () => {
+  const actual = await vi.importActual<typeof import("../../src/gateway/settlement.js")>(
+    "../../src/gateway/settlement.js",
+  );
+  return {
+    ...actual,
+    settlePayment: vi.fn().mockResolvedValue({ success: true, txHash: "0xabc123" }),
+  };
+});
+
 vi.mock("../../src/gateway/helpers.js", () => ({
   getPriceForRoute: vi.fn(),
   checkRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
@@ -175,7 +185,7 @@ describe("x402 Gateway Middleware", () => {
 
       expect((req as any).x402).toBeDefined();
       expect((req as any).x402.payer).toBe("0xPayerAddress");
-      expect((req as any).x402.txHash).toBe("0xtxhash");
+      expect((req as any).x402.txHash).toBe("0xabc123");
     });
   });
 
