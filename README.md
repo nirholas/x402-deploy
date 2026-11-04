@@ -192,7 +192,7 @@ As with most of my repos, I spend a lot of time building then find something int
 
 ## Documentation
 
-Full documentation site: **https://x402-deploy.modelcontextprotocol.name/**
+Full documentation site: **https://x402-deploy.modelcontextprotocol.name/** · Website: **https://x402-deploy-web.modelcontextprotocol.name/** · Dashboard: **https://x402-deploy-dashboard.modelcontextprotocol.name/**
 
 - [Getting started](docs/getting-started.md) covers install and first run.
 - [Examples](docs/examples.md) has copy-paste snippets.
