@@ -17,7 +17,7 @@
     "crypto-payments"
   ],
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.5.0",
+    "@modelcontextprotocol/sdk": "^1.32.0",
     "@nirholas/x402-deploy": "latest"
   },
   "devDependencies": {
