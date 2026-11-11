@@ -1,0 +1,16 @@
+{
+  "name": "x402-deploy",
+  "version": "0.1.3",
+  "description": "Turn an API or MCP server into a paid x402 service: configure pricing, deploy and track earnings from the CLI.",
+  "author": {
+    "name": "nirholas"
+  },
+  "repository": "https://github.com/nirholas/x402-deploy",
+  "homepage": "https://github.com/nirholas/x402-deploy",
+  "keywords": [
+    "x402",
+    "monetization",
+    "mcp",
+    "deploy"
+  ]
+}
