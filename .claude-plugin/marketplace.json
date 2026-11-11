@@ -1,0 +1,21 @@
+{
+  "name": "x402-deploy",
+  "owner": {
+    "name": "nirholas"
+  },
+  "description": "Turn an API or MCP server into a paid x402 service: configure pricing, deploy and track earnings from the CLI.",
+  "plugins": [
+    {
+      "name": "x402-deploy",
+      "source": "./plugins/x402-deploy",
+      "description": "Turn an API or MCP server into a paid x402 service: configure pricing, deploy and track earnings from the CLI.",
+      "category": "automation",
+      "tags": [
+        "x402",
+        "monetization",
+        "mcp",
+        "deploy"
+      ]
+    }
+  ]
+}
